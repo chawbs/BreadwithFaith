@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/my_settings">
+
+    <PreferenceCategory android:key="general_settings"
+        android:title="@string/action_settings">
+
+        <ListPreference
+            android:key="refresh"
+            android:title="Refresh Interval"
+            android:defaultValue="120"
+            android:entries="@array/sync_interval_titles"
+            android:entryValues="@array/sync_interval_values" />
+
+        <ListPreference
+            android:key="translation"
+            android:title="Bible Version"
+            android:defaultValue="NIV"
+            android:entries="@array/bible_titles"
+            android:entryValues="@array/bible_values" />
+
+        <SwitchPreference
+            android:key="notifications_new_message"
+            android:title="Enable notifications"
+            android:defaultValue="true"/>
+
+        <SwitchPreference
+            android:key="notifications_new_message_vibrate"
+            android:title="Vibrate"
+            android:defaultValue="true"
+            android:dependency="notifications_new_message" />
+
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

@@ -1,0 +1,66 @@
+<resources>
+    <string name="app_name">Bread with Faith</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Bread with Faith</string>
+    <string name="nav_header_subtitle">Faith based daily devotionals</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Daily Devotion</string>
+    <string name="menu_justbread">Daily Verse</string>
+    <string name="fab_share">Share</string>
+
+    <string name="pref">preferences</string>
+    <string-array name="sync_interval_titles">
+        <item>15 Minutes</item>
+        <item>30 Minutes</item>
+        <item>1 Hour</item>
+        <item>2 Hours</item>
+        <item>6 Hours</item>
+    </string-array>
+    <string-array name="sync_interval_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>120</item>
+        <item>360</item>
+    </string-array>
+    <string-array name="bible_titles">
+        <item>American Standard Version</item>
+        <item>Common English Bible</item>
+        <item>King James Version</item>
+        <item>North American Standard Bible</item>
+        <item>New International Version</item>
+        <item>New King James Version</item>
+        <item>New Living Translation</item>
+        <item>The Message Bible</item>
+    </string-array>
+    <string-array name="bible_values">
+        <item>ASV</item>
+        <item>CEB</item>
+        <item>KJV</item>
+        <item>NAS</item>
+        <item>NIV</item>
+        <item>NKJV</item>
+        <item>NLT</item>
+        <item>MSG</item>
+    </string-array>
+
+    <string name="bread_cache">bread</string>
+    <string name="bread_lastcheck">breadcheck</string>
+    <string name="bread_lastget">breadget</string>
+    <string name="bread_update">breadupdate</string>
+    <string name="tab1_fetch">https://bbf.fbcxt.org/getlatestbread_new.php</string>
+    <string name="tab1_time">https://bbf.fbcxt.org/getlocalisedlatest.php</string>
+
+    <string name="verse_cache">verse</string>
+    <string name="verse_lastcheck">versecheck</string>
+    <string name="verse_lastget">verseget</string>
+    <string name="verse_update">verseupdate</string>
+    <string name="tab2_fetch">https://justbread.org/getlatestbread_new.php</string>
+    <string name="tab2_time">https://justbread.org/getlocalisedlatest.php</string>
+    <string name="channel_name">Bread Notification</string>
+    <string name="channel_description">New devotional(s) are available</string>
+
+</resources>
