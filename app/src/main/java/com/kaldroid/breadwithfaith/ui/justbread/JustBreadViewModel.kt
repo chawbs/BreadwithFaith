@@ -6,7 +6,6 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.kaldroid.breadwithfaith.MainActivity
 import com.kaldroid.breadwithfaith.R
 
 class JustBreadViewModel(application: Application) : AndroidViewModel(application) {
@@ -22,15 +21,15 @@ class JustBreadViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun refreshData() {
         feed = getData()
-        text = this._text;
+        text = this._text
     }
     fun getData(): String {
-        var cache: SharedPreferences = app.getSharedPreferences(app.getText(R.string.verse_cache).toString(),
+        val cache: SharedPreferences = app.getSharedPreferences(app.getText(R.string.verse_cache).toString(),
             Context.MODE_PRIVATE
         )
         var feed: String = cache.getString("versefeed", "<body>Daily Verse</body>").toString()
-        val htmlbegin: String = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"></head>"
-        val htmlend: String = "</html>"
+        val htmlbegin = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"></head>"
+        val htmlend = "</html>"
         Log.i("BwF", "verse getData called, feed: $feed")
         feed = htmlbegin + feed + htmlend
         return feed

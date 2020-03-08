@@ -6,28 +6,22 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.media.MediaPlayer
-import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.NotificationManagerCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat.*
-import androidx.fragment.app.FragmentManager
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.NotificationManagerCompat.from
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
@@ -40,8 +34,6 @@ import androidx.work.WorkManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
-import com.kaldroid.breadwithfaith.ui.bread.BreadFragment
-import com.kaldroid.breadwithfaith.ui.bread.BreadViewModel
 import java.util.concurrent.TimeUnit
 
 
@@ -54,7 +46,7 @@ var mustVibrate: Boolean = true
 var homeView: WebView? = null
 var verseView: WebView? = null
 var context: Context? = null
-var inflater: LayoutInflater? = null;
+var inflater: LayoutInflater? = null
 var pref: SharedPreferences? = null
 var lastNotified: Long = 0
 var lastFetched: Long = 0
@@ -79,14 +71,13 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Sharing Devotion", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
-            var webView: WebView? = findViewById(R.id.text_home)
+            val webView: WebView? = findViewById(R.id.text_home)
             var feed: String? = breadHtml
             if (webView == null) {
                 //webView = findViewById(R.id.text_justbread)
                 feed = verseHtml
             }
             //sharingIntent.type = "text/plain"
-            //var shareBody: String = webView.toString()
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_SUBJECT, "Today's Devotion")
@@ -124,18 +115,15 @@ class MainActivity : AppCompatActivity() {
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.drawable.ic_bread_with_faith)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true);
+                .setAutoCancel(true)
         } catch (e:Exception) {
             Log.e("BwF", "NotificationBuilder Exception: ${e.message}")
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-    }
-
     override fun onResume() {
         super.onResume()
+        // attempt to stop any existing worker threads and submit a new one for each devotional
         val intv: Long = pref!!.getString("refresh", "120")!!.toLong()
         mBreadRequest = PeriodicWorkRequest.Builder(tab1CheckWorker::class.java, intv, TimeUnit.MINUTES)
             .setInitialDelay(2, TimeUnit.SECONDS)
@@ -143,8 +131,8 @@ class MainActivity : AppCompatActivity() {
         mJustBreadRequest = PeriodicWorkRequest.Builder(tab2CheckWorker::class.java, intv, TimeUnit.MINUTES)
             .setInitialDelay(3, TimeUnit.SECONDS)
             .build()
-        WorkManager.getInstance(this).cancelWorkById(mBreadRequest!!.getId())
-        WorkManager.getInstance(this).cancelWorkById(mJustBreadRequest!!.getId())
+        WorkManager.getInstance(this).cancelWorkById(mBreadRequest!!.id)
+        WorkManager.getInstance(this).cancelWorkById(mJustBreadRequest!!.id)
         WorkManager.getInstance(this).enqueue(mBreadRequest!!)
         WorkManager.getInstance(this).enqueue(mJustBreadRequest!!)
     }
@@ -175,11 +163,8 @@ class MainActivity : AppCompatActivity() {
         mustDing = pref!!.getBoolean("notifications_new_message", true)
         mustVibrate = pref!!.getBoolean("notifications_new_message_vibrate", true)
         if(id == R.id.action_settings) {
-            //setContentView(R.layout.preference_settings)
             val intent = Intent(this,MySettingsActivity::class.java)
             startActivity(intent)
-
-            //startActivityForResult(Intent(android.provider.Settings.ACTION_SETTINGS),0)
             return true
         }
         return super.onOptionsItemSelected(item)
@@ -205,19 +190,16 @@ class MainActivity : AppCompatActivity() {
 
     fun dingerBread() {
         val notificationManager: NotificationManagerCompat = from(context!!)
-        var dingable: Boolean = notificationManager.areNotificationsEnabled()
-        var homeDing = (lastFetched - lastNotified) / 1000
+        val dingable: Boolean = notificationManager.areNotificationsEnabled()
+        val homeDing = (lastFetched - lastNotified) / 1000
         Log.e("BwF","BREAD lastFetched1: $lastFetched, lastNotified1: $lastNotified")
 
         if(dingable && mustDing && (homeDing >  1)) {
             try {
-                val alarmSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                //val mp: MediaPlayer = MediaPlayer.create(context!!, alarmSound)
                 lastNotified = System.currentTimeMillis()
-                //mp.start()
                 with(notificationManager) {
                     // notificationId is a unique int for each notification that you must define
-                    var notificationId: Int = System.currentTimeMillis().toInt()
+                    val notificationId: Int = System.currentTimeMillis().toInt()
                     builder!!
                         .setContentTitle("New Daily Bread")
                         .setContentText("New Daily Bread devotional(s) available")
@@ -235,16 +217,15 @@ class MainActivity : AppCompatActivity() {
     private fun checkNotificationPolicyAccess(notificationManager:NotificationManager):Boolean{
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (notificationManager.isNotificationPolicyAccessGranted){
-                //toast("Notification policy access granted.")
                 return true
             }else{
-                //toast("You need to grant notification policy access.")
                 // If notification policy access not granted for this package
                 val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
                 startActivity(intent)
             }
         }else{
             //toast("Device does not support this feature.")
+            Log.i("BwF", "Not supported at this build level")
         }
         return false
     }

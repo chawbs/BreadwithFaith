@@ -155,11 +155,6 @@ internal constructor() : DefaultHandler() {
                 currentstate = 0
                 return
             }
-        }//currentstate = 0;
-        //currentstate = 0;
-        //currentstate = 0;
-        //currentstate = 0;
-        //currentstate = 0;
-        //currentstate = 0;
+        }
     }
 }
