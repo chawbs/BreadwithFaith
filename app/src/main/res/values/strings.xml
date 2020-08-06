@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Bread with Faith</string>
+    <string name="tag">BwF</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Bread with Faith</string>
@@ -51,15 +52,15 @@
     <string name="bread_lastcheck">breadcheck</string>
     <string name="bread_lastget">breadget</string>
     <string name="bread_update">breadupdate</string>
-    <string name="tab1_fetch">https://bbf.fbcxt.org/getlatestbread_new.php</string>
-    <string name="tab1_time">https://bbf.fbcxt.org/getlocalisedlatest.php</string>
+    <string name="tab1_fetch">https://justbread.org/getlatestbreadbyfaith.php</string>
+    <string name="tab1_time">https://justbread.org/getlocalbreadbyfaith.php</string>
 
     <string name="verse_cache">verse</string>
     <string name="verse_lastcheck">versecheck</string>
     <string name="verse_lastget">verseget</string>
     <string name="verse_update">verseupdate</string>
-    <string name="tab2_fetch">https://justbread.org/getlatestbread_new.php</string>
-    <string name="tab2_time">https://justbread.org/getlocalisedlatest.php</string>
+    <string name="tab2_fetch">https://justbread.org/getlatestjustbread.php</string>
+    <string name="tab2_time">https://justbread.org/getlocaljustbread.php</string>
     <string name="channel_name">Bread Notification</string>
     <string name="channel_description">New devotional(s) are available</string>
 

@@ -58,12 +58,13 @@ class MySettingsActivity : AppCompatActivity() {
         editor.putInt("t1lastupdate", 0)
         editor.putInt("t2lastcheck", 0)
         editor.putInt("t2lastupdate", 0)
-        editor.commit()
+        editor.apply()
         val mRequest1 = OneTimeWorkRequest.Builder(tab1FetchWorker::class.java).build()
         val mRequest2 = OneTimeWorkRequest.Builder(tab2FetchWorker::class.java).build()
         WorkManager.getInstance(applicationContext).enqueue(mRequest1)
         WorkManager.getInstance(applicationContext).enqueue(mRequest2)
-        setContentView(R.layout.activity_main)
+        finish()
+        //setContentView(R.layout.activity_main)
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
@@ -82,7 +83,7 @@ class MySettingsActivity : AppCompatActivity() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
         ): View? {
-            pref = context!!.getSharedPreferences(
+            pref = requireContext().getSharedPreferences(
                 getText(R.string.pref) as String,
                 Context.MODE_PRIVATE
             )

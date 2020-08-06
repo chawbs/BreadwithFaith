@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.os.AsyncTask
 import android.util.Log
-import androidx.work.ListenableWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import org.xml.sax.InputSource
@@ -17,30 +16,33 @@ import javax.xml.parsers.SAXParserFactory
 class tab2FetchWorker(
         context: Context,
         workerParams: WorkerParameters) : Worker(context, workerParams) {
-    internal var mContext: Context? = null
+    companion object {
+        lateinit var mContext: Context
+    }
 
     init {
         mContext = context
     }
 
     @SuppressLint("WrongThread")
-    override fun doWork(): ListenableWorker.Result {
+    override fun doWork(): Result {
         // get bread
-        var url2 = mContext!!.getText(R.string.tab2_fetch) as String
+        var url2 = mContext.getText(R.string.tab2_fetch) as String
         val curTime = System.currentTimeMillis()
         val unixTime = (curTime + TimeZone.getDefault().getOffset(curTime)) / 1000L
-        val pref = mContext!!.getSharedPreferences(mContext!!.getText(R.string.pref) as String, MODE_PRIVATE)
-        var trans = pref.getString("translation", "NIV")
+        val pref = mContext.getSharedPreferences(mContext.getText(R.string.pref) as String, MODE_PRIVATE)
+        val trans = pref.getString("translation", "NIV")
 
         url2 = "$url2?trans=$trans"
         url2 = url2 + "&time=" + java.lang.Long.toString(unixTime)
 
+        Log.v(mContext.getString(R.string.tag),"Async Task for: "+url2)
         GetFeedTask().execute(url2)
 
-        return ListenableWorker.Result.success()
+        return Result.success()
     }
 
-    internal inner class GetFeedTask : AsyncTask<String, Void, RSSFeed>() {
+    internal class GetFeedTask : AsyncTask<String, Void, RSSFeed>() {
         //private val mainActivity: MainActivity = MainActivity()
         private var mex: Exception? = null
         private var mioex: IOException? = null
@@ -69,19 +71,19 @@ class tab2FetchWorker(
         }
 
         override fun onPostExecute(feed: RSSFeed) {
-            var curTime = System.currentTimeMillis()
-            var unixTime = (curTime + TimeZone.getDefault().getOffset(curTime)) / 1000L
+            val curTime = System.currentTimeMillis()
+            val unixTime = (curTime + TimeZone.getDefault().getOffset(curTime)) / 1000L
             val item = feed.getItem(0)
             //val content = item.content
             val description = item.description
-            val cache = mContext!!.getSharedPreferences(mContext!!.getText(R.string.verse_cache).toString(), MODE_PRIVATE)
+            val cache = mContext.getSharedPreferences(mContext.getText(R.string.verse_cache).toString(), MODE_PRIVATE)
             val bread = cache.edit()
             bread.putString("versefeed", description)
-            bread.commit()
-            val pref = mContext!!.getSharedPreferences(mContext!!.getText(R.string.pref) as String, MODE_PRIVATE)
+            bread.apply()
+            val pref = mContext.getSharedPreferences(mContext.getText(R.string.pref) as String, MODE_PRIVATE)
             val editor = pref.edit()
             editor.putLong("t2lastget", unixTime)
-            editor.commit()
+            editor.apply()
             Log.i("BwF", "Got verse at $unixTime calling updateVerse")
             MainActivity().runOnUiThread(MainActivity().verseText(description!!))
             MainActivity().runOnUiThread(MainActivity().updateVerse())

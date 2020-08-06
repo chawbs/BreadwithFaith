@@ -29,6 +29,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.work.OneTimeWorkRequest
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -91,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
         navController = findNavController(R.id.nav_host_fragment)
-        navController!!.addOnDestinationChangedListener { nc: NavController, nd: NavDestination, bundle: Bundle? ->
+        navController!!.addOnDestinationChangedListener { _: NavController, _: NavDestination, _: Bundle? ->
             homeView = findViewById(R.id.text_home)
             verseView = findViewById(R.id.text_justbread)
         }
@@ -119,22 +120,18 @@ class MainActivity : AppCompatActivity() {
         } catch (e:Exception) {
             Log.e("BwF", "NotificationBuilder Exception: ${e.message}")
         }
+
+        // now get an update because we are new...
+        val oRequestBread = OneTimeWorkRequest.Builder(tab1FetchWorker::class.java).build()
+        val oRequestJustBread = OneTimeWorkRequest.Builder(tab2FetchWorker::class.java).build()
+        WorkManager.getInstance(applicationContext).enqueue(oRequestBread)
+        WorkManager.getInstance(applicationContext).enqueue(oRequestJustBread)
+
     }
 
     override fun onResume() {
         super.onResume()
-        // attempt to stop any existing worker threads and submit a new one for each devotional
-        val intv: Long = pref!!.getString("refresh", "120")!!.toLong()
-        mBreadRequest = PeriodicWorkRequest.Builder(tab1CheckWorker::class.java, intv, TimeUnit.MINUTES)
-            .setInitialDelay(2, TimeUnit.SECONDS)
-            .build()
-        mJustBreadRequest = PeriodicWorkRequest.Builder(tab2CheckWorker::class.java, intv, TimeUnit.MINUTES)
-            .setInitialDelay(3, TimeUnit.SECONDS)
-            .build()
-        WorkManager.getInstance(this).cancelWorkById(mBreadRequest!!.id)
-        WorkManager.getInstance(this).cancelWorkById(mJustBreadRequest!!.id)
-        WorkManager.getInstance(this).enqueue(mBreadRequest!!)
-        WorkManager.getInstance(this).enqueue(mJustBreadRequest!!)
+        reQueue()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -165,6 +162,8 @@ class MainActivity : AppCompatActivity() {
         if(id == R.id.action_settings) {
             val intent = Intent(this,MySettingsActivity::class.java)
             startActivity(intent)
+            // re queue workers after returning
+            reQueue()
             return true
         }
         return super.onOptionsItemSelected(item)
@@ -190,11 +189,10 @@ class MainActivity : AppCompatActivity() {
 
     fun dingerBread() {
         val notificationManager: NotificationManagerCompat = from(context!!)
-        val dingable: Boolean = notificationManager.areNotificationsEnabled()
         val homeDing = (lastFetched - lastNotified) / 1000
-        Log.e("BwF","BREAD lastFetched1: $lastFetched, lastNotified1: $lastNotified")
+        Log.e("BwF","STUFF lastFetched: $lastFetched, lastNotified: $lastNotified")
 
-        if(dingable && mustDing && (homeDing >  1)) {
+        if(homeDing >  2) {
             try {
                 lastNotified = System.currentTimeMillis()
                 with(notificationManager) {
@@ -212,6 +210,28 @@ class MainActivity : AppCompatActivity() {
                 Log.e("BwF", "dingerBread Exception: ${e.message}")
             }
         }
+    }
+
+    fun reQueue() {
+        Log.i(getString(R.string.tag),"Re-Queueing workers")
+        // attempt to stop any existing worker threads and submit a new one for each devotional
+        val intv: Long = pref!!.getString("refresh", "30")!!.toLong()
+        try {
+            if(mBreadRequest!=null)
+                WorkManager.getInstance(this).cancelWorkById(mBreadRequest!!.id)
+            if(mJustBreadRequest!=null)
+                WorkManager.getInstance(this).cancelWorkById(mJustBreadRequest!!.id)
+        } catch (e:Exception) {
+            Log.e("BwF", "Error Cancelling Requests: ${e.message}")
+        }
+        mBreadRequest = PeriodicWorkRequest.Builder(tab1CheckWorker::class.java, intv, TimeUnit.MINUTES)
+            .setInitialDelay(2, TimeUnit.SECONDS)
+            .build()
+        mJustBreadRequest = PeriodicWorkRequest.Builder(tab2CheckWorker::class.java, intv, TimeUnit.MINUTES)
+            .setInitialDelay(3, TimeUnit.SECONDS)
+            .build()
+        WorkManager.getInstance(this).enqueue(mBreadRequest!!)
+        WorkManager.getInstance(this).enqueue(mJustBreadRequest!!)
     }
 
     private fun checkNotificationPolicyAccess(notificationManager:NotificationManager):Boolean{

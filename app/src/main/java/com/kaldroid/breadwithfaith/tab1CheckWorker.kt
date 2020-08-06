@@ -3,7 +3,6 @@ package com.kaldroid.breadwithfaith
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
-import android.net.ConnectivityManager
 import android.os.AsyncTask
 import android.util.Log
 import androidx.concurrent.futures.ResolvableFuture
@@ -21,9 +20,10 @@ import java.util.*
 class tab1CheckWorker(context: Context, workerParams: WorkerParameters) : ListenableWorker(context, workerParams) {
     @SuppressLint("RestrictedApi")
     private val future: ResolvableFuture<Result> = ResolvableFuture.create()
-    private var mContext: Context? = null
     private var tab1NeedsFetch = false
-    private val mRequest = OneTimeWorkRequest.Builder(tab1FetchWorker::class.java).build()
+    companion object {
+        lateinit var mContext: Context
+    }
 
     init {
         mContext = context
@@ -33,29 +33,23 @@ class tab1CheckWorker(context: Context, workerParams: WorkerParameters) : Listen
         // check bread
         tab1NeedsFetch = doWeNeedToFetch(R.string.tab1_time)
         // if bread updated start fetch worker
-        if (tab1NeedsFetch) {
-            WorkManager.getInstance(applicationContext).enqueue(mRequest)
-        }
+        //if (tab1NeedsFetch) {
+        //    val mRequest = OneTimeWorkRequest.Builder(tab1FetchWorker::class.java).build()
+        //    WorkManager.getInstance(applicationContext).enqueue(mRequest)
+        //}
         return future
     }
 
     private fun doWeNeedToFetch(tab_time: Int): Boolean {
         var yesItDoes = false
 
-        var urlt = mContext!!.getText(tab_time) as String
+        var urlt = mContext.getText(tab_time) as String
         val curTime = System.currentTimeMillis()
         val unixTime = (curTime + TimeZone.getDefault().getOffset(curTime)) / 1000L
         urlt = urlt + "?format=raw&time=" + java.lang.Long.toString(unixTime)
-        val conMgr = mContext!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val info = conMgr.activeNetworkInfo
 
         try {
-            if (info != null && info.isConnected) {
-                //val pref = mContext!!.getSharedPreferences(mContext!!.getText(R.string.pref) as String, MODE_PRIVATE)
-                CheckFeedTask().execute(urlt)
-            } else {
-                yesItDoes = false
-            }
+            CheckFeedTask().execute(urlt)
         } catch (ex: Exception) {
             yesItDoes = false
         }
@@ -63,11 +57,11 @@ class tab1CheckWorker(context: Context, workerParams: WorkerParameters) : Listen
         return yesItDoes
     }
 
-    internal inner class CheckFeedTask : AsyncTask<String, Void, Int>() {
+    internal class CheckFeedTask : AsyncTask<String, Void, Int>() {
         private var mioex: IOException? = null
         private var lastUpdate: Long = 0
         private var lastGet: Long = 0
-        var pref = mContext!!.getSharedPreferences(mContext!!.getText(R.string.pref) as String, MODE_PRIVATE)
+        var pref = mContext.getSharedPreferences(mContext.getText(R.string.pref) as String, MODE_PRIVATE)
         override fun doInBackground(vararg urls: String): Int? {
             try {
                 val url = URL(urls[0])
@@ -97,7 +91,8 @@ class tab1CheckWorker(context: Context, workerParams: WorkerParameters) : Listen
                 lastGet = pref.getLong("t1lastget", 0)
                 Log.i("BwF","Home: lastGet: $lastGet, lastUpdate: $lastUpdate")
                 if (lastGet < lastUpdate) {
-                    WorkManager.getInstance(applicationContext).enqueue(mRequest)
+                    val mRequest = OneTimeWorkRequest.Builder(tab1FetchWorker::class.java).build()
+                    WorkManager.getInstance(mContext).enqueue(mRequest)
                 } else {
                     Log.i("BwF", "No update necessary for Home")
                 }
